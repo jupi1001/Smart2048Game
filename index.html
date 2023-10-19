@@ -2,7 +2,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>2048Game</title>
+    <title>2048-Game</title>
     <link rel="stylesheet" href="styles.css" />
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,400,800" rel="stylesheet" />
   </head>
@@ -14,6 +14,7 @@
         <div class="a">
           2048 <button class="info" onClick="info()">i</button>
           <button id="repeat" class="info repeat" onClick="reset()">↻</button>
+          <button id="repeat" class="info" onClick="startAI()">AI</button>
         </div>
         <div class="score">Score<br /><span id="value"></span></div>
       </div>
@@ -22,8 +23,6 @@
         Use your arrow-keys to slide the tiles. <br />
         Two tiles with the same value in line can be merged. The goal is to merge the tiles and get the 2048 tile.<br /><br />
         The score is a sum of the merged tiles.<br /><br />
-        <span>_______________________________</span><br /><br />
-        Made by Fabian Richter 01/2017
       </div>
       <div class="field">
         <div class="row">

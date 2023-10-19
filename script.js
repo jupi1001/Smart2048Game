@@ -69,7 +69,7 @@ function cellCreator(c, timeOut) {
     var tileValue = tile.dataset.value;
     tile.dataset.value = "" + randomValue;
 
-    console.info("" + timeOut);
+    //console.info("" + timeOut);
     if (timeOut == 0) {
       tile.className = "tile " + randomValue;
     } else {
@@ -93,7 +93,7 @@ function directions(e) {
     for (var x = 2; x > 1; x--) {
       for (var y = 1; y < 5; y++) {
         moveTilesMain(x, y, -1, 0, 1, 0);
-        console.info("" + x + y);
+        //console.info("" + x + y);
       }
       if (x == 2) {
         x += count;
@@ -227,7 +227,7 @@ function moveTilesMain(x, y, X, Y, xBorder, yBorder, c, d) {
 function cellReset() {
   var count = 0;
   var a = document.getElementsByClassName("grid").id;
-  console.log("" + a);
+  //console.log("" + a);
 
   for (var x = 1; x < 5; x++) {
     for (var y = 1; y < 5; y++) {
@@ -346,4 +346,152 @@ function reset() {
   score();
   cellReset();
   cellCreator(2, 0);
+}
+
+const possibleMoves = [38, 40, 37, 39];
+let oldBoard = getBoardState();
+let oldMove = getBestMove(oldBoard, possibleMoves);
+
+function startAI() {
+  //for (let index = 0; index < 50; index++) {
+  var board = getBoardState();
+  var bestMove = getBestMove(board, possibleMoves);
+
+  if (board == oldBoard && bestMove == oldMove) {
+    var randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+    bestMove = randomMove;
+  }
+
+  console.log("Best move: " + bestMove);
+
+  if (bestMove !== null) {
+    simulateKeyPress(bestMove);
+  }
+  oldBoard = board;
+  oldMove = bestMove;
+  //}
+}
+
+function getBoardState() {
+  var board = [];
+  for (var i = 1; i <= 4; i++) {
+    var row = [];
+    for (var j = 1; j <= 4; j++) {
+      var tile = document.getElementById("tile_" + i + j);
+      row.push(tile ? parseInt(tile.innerHTML) : 0);
+    }
+    board.push(row);
+  }
+  return board;
+}
+
+function getBestMove(board, possibleMoves) {
+  var bestMove = null;
+  var bestScore = -Infinity;
+
+  for (var i = 0; i < possibleMoves.length; i++) {
+    var move = possibleMoves[i];
+    var newBoard = simulateMove(board, move);
+    if (newBoard !== null) {
+      var score = evaluateBoard(newBoard);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    }
+  }
+
+  return bestMove;
+}
+
+function simulateMove(board, move) {
+  // Implement code to simulate the given move on the board
+  var tempBoard = board.map(function (arr) {
+    return arr.slice();
+  });
+
+  var xStart = 1,
+    xEnd = 5,
+    xStep = 1,
+    yStart = 1,
+    yEnd = 5,
+    yStep = 1;
+
+  if (move == 38) {
+    xStart = 1;
+    xEnd = 5;
+    xStep = 1;
+    yStart = 1;
+    yEnd = 5;
+    yStep = 1;
+  } else if (move == 40) {
+    xStart = 4;
+    xEnd = 0;
+    xStep = -1;
+    yStart = 1;
+    yEnd = 5;
+    yStep = 1;
+  } else if (move == 37) {
+    xStart = 1;
+    xEnd = 5;
+    xStep = 1;
+    yStart = 1;
+    yEnd = 5;
+    yStep = 1;
+  } else if (move == 39) {
+    xStart = 1;
+    xEnd = 5;
+    xStep = 1;
+    yStart = 4;
+    yEnd = 0;
+    yStep = -1;
+  }
+
+  var moved = false;
+
+  for (var x = xStart; x != xEnd; x += xStep) {
+    for (var y = yStart; y != yEnd; y += yStep) {
+      if (board[x - 1][y - 1] != 0) {
+        var newX = x,
+          newY = y;
+        while (newX + xStep >= 1 && newX + xStep <= 4 && newY + yStep >= 1 && newY + yStep <= 4) {
+          var nextTile = tempBoard[newX + xStep - 1][newY + yStep - 1];
+          var currentTile = tempBoard[newX - 1][newY - 1];
+          if (nextTile == 0) {
+            tempBoard[newX + xStep - 1][newY + yStep - 1] = currentTile;
+            tempBoard[newX - 1][newY - 1] = 0;
+            newX += xStep;
+            newY += yStep;
+            moved = true;
+          } else if (nextTile == currentTile) {
+            tempBoard[newX + xStep - 1][newY + yStep - 1] *= 2;
+            tempBoard[newX - 1][newY - 1] = 0;
+            moved = true;
+            break;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return moved ? tempBoard : null;
+}
+
+function evaluateBoard(board) {
+  // Implement your scoring function here
+  var score = 0;
+  for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++) {
+      score += board[i][j];
+    }
+  }
+  return score;
+}
+
+function simulateKeyPress(keyCode) {
+  var event = new Event("keydown");
+  event.keyCode = keyCode;
+  document.dispatchEvent(event);
 }
