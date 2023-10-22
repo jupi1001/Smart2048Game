@@ -210,6 +210,12 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (bestMove === "right") {
       moveRight();
     }
+
+    // Check if the game is over
+    if (!gameOver) {
+      // Start the next AI turn
+      startAI();
+    }
   }
 
   function evaluateBoard(squares, score) {
@@ -226,6 +232,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Reward for higher score
     evaluation += score * 10;
+
+    // Reward for creating combos
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (squares[i * 4 + j].innerHTML === squares[i * 4 + j + 1].innerHTML) {
+          evaluation += 10;
+        }
+        if (squares[i * 4 + j].innerHTML === squares[(i + 1) * 4 + j].innerHTML) {
+          evaluation += 10;
+        }
+      }
+    }
 
     return evaluation;
   }
