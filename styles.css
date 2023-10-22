@@ -50,3 +50,15 @@ button {
   font-weight: bold;
   margin-bottom: 10px;
 }
+
+.leaderboard {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 200px;
+  border: 1px solid black;
+}
+
+.leaderboard-entry {
+  padding: 10px;
+}

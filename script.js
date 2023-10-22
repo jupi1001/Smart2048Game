@@ -2,10 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const gridDisplay = document.querySelector(".grid");
   const scoreDisplay = document.getElementById("value");
   let gameOver = false;
-  let won = false;
   let score = 0;
   let squares = [];
   const width = 4;
+  let leaderboard = [];
 
   function createBoard() {
     for (let i = 0; i < width * width; i++) {
@@ -147,9 +147,25 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
     }
+
+    leaderboard.push(score);
+    // Update the leaderboard
+    const leaderboardList = document.getElementById("leaderboard-list");
+    leaderboardList.innerHTML = "";
+
+    // Get the top scores from the leaderboard
+    const topScores = getTopScores();
+
+    // Add each top score to the leaderboard list
+    for (const score of topScores) {
+      const leaderboardEntry = document.createElement("li");
+      leaderboardEntry.textContent = score;
+      leaderboardList.appendChild(leaderboardEntry);
+    }
   }
 
   document.getElementById("resetBoardButton").addEventListener("click", resetBoard);
+  document.getElementById("simulate100Runs").addEventListener("click", do100Runs);
 
   function resetBoard() {
     // Clear all squares
@@ -166,6 +182,24 @@ document.addEventListener("DOMContentLoaded", () => {
     // Reset the game over flag
     gameOver = false;
     won = false;
+  }
+
+  function getTopScores() {
+    // Sort the scores in descending order
+    leaderboard.sort((a, b) => b - a);
+    leaderboard = leaderboard.filter((element, index) => {
+      return leaderboard.indexOf(element) === index;
+    });
+
+    // Return the top 10 scores
+    return leaderboard.slice(0, 10);
+  }
+
+  function do100Runs() {
+    for (let index = 0; index < 100; index++) {
+      startAI();
+      resetBoard();
+    }
   }
 
   document.getElementById("startAIButton").addEventListener("click", startAI);
@@ -242,6 +276,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (squares[i * 4 + j].innerHTML === squares[(i + 1) * 4 + j].innerHTML) {
           evaluation += 10;
         }
+      }
+    }
+
+    // Penalize for large gaps between tiles
+    for (let i = 0; i < 15; i++) {
+      if (squares[i].innerHTML !== "0" && squares[i + 1].innerHTML === "0") {
+        evaluation -= 1;
       }
     }
 
