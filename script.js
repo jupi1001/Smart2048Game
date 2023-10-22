@@ -6,12 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let score = 0;
   let squares = [];
   const width = 4;
-  let board = [
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-  ];
 
   function createBoard() {
     for (let i = 0; i < width * width; i++) {
@@ -157,13 +151,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("startAIButton").addEventListener("click", startAI);
 
+  //------------------AI
   function startAI() {
     if (gameOver || won) return;
-    let bestMove = findBestMove(board, 3, -Infinity, Infinity, true);
-
+    let bestMove = findBestMove(squares, 3, -Infinity, Infinity, true);
+    console.log("Best move: " + bestMove.score + ", " + bestMove.move);
     if (bestMove.move) {
-      let newBoard = makeMove(board, bestMove.move, 2);
-      board = newBoard;
+      let newBoard = makeMove(squares, bestMove.move, 2);
+      console.log(squares);
+      squares = newBoard;
+
+      console.log(squares);
+
+      //generate();
     }
   }
 
@@ -173,65 +173,94 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (maximizingPlayer) {
-      let maxEval = { score: -Infinity };
+      let maxEval = { score: -Infinity, move: null };
+
       let moves = ["left", "up", "right", "down"];
+
       for (let move of moves) {
         let newBoard = makeMove([...board], move, 2);
+
         if (!arraysEqual(newBoard, board)) {
           let eval = findBestMove(newBoard, depth - 1, alpha, beta, false);
+
           if (eval.score > maxEval.score) {
             maxEval.score = eval.score;
             maxEval.move = move;
           }
+
           alpha = Math.max(alpha, eval.score);
+
           if (beta <= alpha) break;
         }
       }
+
       return maxEval;
     } else {
-      let minEval = { score: Infinity };
+      let minEval = { score: Infinity, move: null };
       let emptyCells = getEmptyCells(board);
+
       for (let cell of emptyCells) {
         let newBoard2 = makeMove([...board], cell, 2);
         let eval = findBestMove(newBoard2, depth - 1, alpha, beta, true);
+
         if (eval.score < minEval.score) {
           minEval.score = eval.score;
+          minEval.move = cell;
         }
+
         beta = Math.min(beta, eval.score);
+
         if (beta <= alpha) break;
       }
+
       return minEval;
     }
   }
 
   function makeMove(board, direction, value) {
-    let newBoard = [...board];
-    if (direction === "left") {
-      for (let i = 0; i < 4; i++) {
-        newBoard[i] = moveLineLeft(newBoard[i], value);
-      }
-    } else if (direction === "up") {
-      for (let i = 0; i < 4; i++) {
-        let col = [newBoard[0][i], newBoard[1][i], newBoard[2][i], newBoard[3][i]];
-        col = moveLineLeft(col, value);
-        for (let j = 0; j < 4; j++) {
-          newBoard[j][i] = col[j];
-        }
-      }
-    } else if (direction === "right") {
-      for (let i = 0; i < 4; i++) {
-        newBoard[i] = moveLineRight(newBoard[i], value);
-      }
-    } else if (direction === "down") {
-      for (let i = 0; i < 4; i++) {
-        let col = [newBoard[0][i], newBoard[1][i], newBoard[2][i], newBoard[3][i]];
-        col = moveLineRight(col, value);
-        for (let j = 0; j < 4; j++) {
-          newBoard[j][i] = col[j];
-        }
-      }
+    let newBoard = [];
+    for (let i = 0; i < 4; i++) {
+      newBoard.push(board.slice(i * 4, i * 4 + 4));
     }
-    return newBoard;
+
+    switch (direction) {
+      case "left":
+        for (let i = 0; i < 4; i++) {
+          newBoard[i] = moveLeft(newBoard[i], value);
+        }
+        break;
+
+      case "up":
+        for (let i = 0; i < 4; i++) {
+          let col = [newBoard[0][i], newBoard[1][i], newBoard[2][i], newBoard[3][i]];
+          col = moveUp(col, value);
+          for (let j = 0; j < 4; j++) {
+            newBoard[j][i] = col[j];
+          }
+        }
+        break;
+
+      case "right":
+        for (let i = 0; i < 4; i++) {
+          newBoard[i] = moveRight(newBoard[i], value);
+        }
+        break;
+
+      case "down":
+        for (let i = 0; i < 4; i++) {
+          let col = [newBoard[0][i], newBoard[1][i], newBoard[2][i], newBoard[3][i]];
+          col = moveDown(col, value);
+          for (let j = 0; j < 4; j++) {
+            newBoard[j][i] = col[j];
+          }
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    return [].concat(...newBoard);
   }
 
   function evaluateBoard(board) {
@@ -247,70 +276,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return smoothWeight * smoothness + monoWeight * monotonicity + maxWeight * maxTile;
   }
 
-  // Helper functions
-  function moveLineLeft(line, value) {
-    let result = [0, 0, 0, 0];
-    let j = 0;
-    for (let i = 0; i < 4; i++) {
-      if (line[i] !== 0) {
-        result[j] = line[i];
-        j++;
-      }
-    }
-    for (let i = 0; i < 3; i++) {
-      if (result[i] === result[i + 1]) {
-        result[i] *= 2;
-        result[i + 1] = 0;
-      }
-    }
-    j = 0;
-    for (let i = 0; i < 4; i++) {
-      if (result[i] !== 0) {
-        line[j] = result[i];
-        j++;
-      }
-    }
-    for (let i = j; i < 4; i++) {
-      line[i] = 0;
-    }
-    return line;
-  }
-
-  function moveLineRight(line, value) {
-    let result = [0, 0, 0, 0];
-    let j = 3;
-    for (let i = 3; i >= 0; i--) {
-      if (line[i] !== 0) {
-        result[j] = line[i];
-        j--;
-      }
-    }
-    for (let i = 3; i > 0; i--) {
-      if (result[i] === result[i - 1]) {
-        result[i] *= 2;
-        result[i - 1] = 0;
-      }
-    }
-    j = 3;
-    for (let i = 3; i >= 0; i--) {
-      if (result[i] !== 0) {
-        line[j] = result[i];
-        j--;
-      }
-    }
-    for (let i = j; i >= 0; i--) {
-      line[i] = 0;
-    }
-    return line;
-  }
-
   function getEmptyCells(board) {
     let emptyCells = [];
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
-        if (board[i][j] === 0) {
-          emptyCells.push({ row: i, col: j });
-        }
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === 0) {
+        emptyCells.push(i);
       }
     }
     return emptyCells;
