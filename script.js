@@ -157,9 +157,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const topScores = getTopScores();
 
     // Add each top score to the leaderboard list
-    for (const score of topScores) {
+
+    for (let index = 0; index < topScores.length; index++) {
       const leaderboardEntry = document.createElement("li");
-      leaderboardEntry.textContent = score;
+      leaderboardEntry.classList.add("leaderboard-entry"); // Add this line
+
+      if (index === 0) {
+        leaderboardEntry.textContent = "🏆 " + topScores[index];
+      } else {
+        leaderboardEntry.textContent = topScores[index];
+      }
       leaderboardList.appendChild(leaderboardEntry);
     }
   }
